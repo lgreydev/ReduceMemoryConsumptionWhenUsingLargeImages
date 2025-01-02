@@ -65,7 +65,7 @@ struct DownsizedImageView<Content: View>: View   {
     // creating Downsized image
     private func createDownsizedImage(_ image: UIImage?) {
         guard let image else { return }
-        let aspectSize = image.size
+        let aspectSize = image.size.aspectFit(size)
         
         // generate a scaled down version of an image in a separate thread so that it does not affect the main thread while it is being generated.
         Task.detached(priority: .high) {
@@ -77,5 +77,15 @@ struct DownsizedImageView<Content: View>: View   {
                 downsizedImageView = .init(uiImage: resizedImage)
             }
         }
+    }
+}
+
+extension CGSize {
+    //return a new size that fits the given size in an aspect ratio
+    func aspectFit(_ to: CGSize) -> CGSize {
+        let scaleX = to.width / self.width
+        let scaleY = to.height / self.height
+        let aspectRatio = min(scaleX, scaleY)
+        return .init(width: aspectRatio * width, height: aspectRatio * height)
     }
 }
