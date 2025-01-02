@@ -13,8 +13,9 @@ struct ContentView: View {
             List {
                 HStack {
                     ForEach(1...3, id: \.self) { index in
-                        if let image = UIImage(named: "Scr\(index)") {
-                            Image(uiImage: image)
+                        let size = CGSize(width: 150, height: 150)
+                        DownsizedImageView(image: UIImage(named: "Scr\(index)"), size: size) { image in
+                            image
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: 100, height: 150)
@@ -51,6 +52,7 @@ struct DownsizedImageView<Content: View>: View   {
         }
         .onAppear {
             guard downsizedImageView == nil else { return }
+            createDownsizedImage(image)
         }
         .onChange(of: image) { oldValue, newValue in
             guard oldValue != newValue else { return }
