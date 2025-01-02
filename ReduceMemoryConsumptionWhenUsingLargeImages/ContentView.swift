@@ -12,14 +12,19 @@ struct ContentView: View {
         NavigationStack {
             List {
                 HStack {
-                    ForEach(1...3, id: \.self) { index in
+                    ForEach(1...4 /*incorrect quantity*/, id: \.self) { index in
                         let size = CGSize(width: 150, height: 150)
                         DownsizedImageView(image: UIImage(named: "Scr\(index)"), size: size) { image in
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 100, height: 150)
-                                .clipShape(.rect(cornerRadius: 10))
+                            GeometryReader {
+                                let size = $0.size
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: size.width, height: size.height)
+                                    .clipShape(.rect(cornerRadius: 10))
+                            }
+                            .frame(height: 150)
+                            
                         }
                     }
                 }
@@ -48,6 +53,10 @@ struct DownsizedImageView<Content: View>: View   {
         ZStack {
             if let downsizedImageView {
                 content(downsizedImageView)
+            } else {
+                // optional loading View
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .onAppear {
