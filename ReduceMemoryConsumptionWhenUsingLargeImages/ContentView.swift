@@ -36,7 +36,7 @@ struct ContentView: View {
 
 struct DownsizedImageView<Content: View>: View   {
     var image: UIImage?
-    var size: CGSize?
+    var size: CGSize
     
     // it works like AsynImage
     @ViewBuilder var content: (Image) -> Content
@@ -64,7 +64,18 @@ struct DownsizedImageView<Content: View>: View   {
     
     // creating Downsized image
     private func createDownsizedImage(_ image: UIImage?) {
+        guard let image else { return }
+        let aspectSize = image.size
         
+        // generate a scaled down version of an image in a separate thread so that it does not affect the main thread while it is being generated.
+        Task.detached(priority: .high) {
+            let renderer = UIGraphicsImageRenderer(size: aspectSize)
+            let resizedImage = renderer.image { context in
+                image.draw(in: CGRect(origin: .zero, size: aspectSize))
+            }
+            await MainActor.run {
+                downsizedImageView = .init(uiImage: resizedImage)
+            }
+        }
     }
 }
-
