@@ -32,3 +32,37 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+
+struct DownsizedImageView<Content: View>: View   {
+    var image: UIImage?
+    var size: CGSize?
+    
+    // it works like AsynImage
+    @ViewBuilder var content: (Image) -> Content
+    
+    // view Properties
+    @State private var downsizedImageView: Image?
+    
+    var body: some View {
+        ZStack {
+            if let downsizedImageView {
+                content(downsizedImageView)
+            }
+        }
+        .onAppear {
+            guard downsizedImageView == nil else { return }
+        }
+        .onChange(of: image) { oldValue, newValue in
+            guard oldValue != newValue else { return }
+            // dynamic image changes
+            createDownsizedImage(newValue)
+            createDownsizedImage(image)
+        }
+    }
+    
+    // creating Downsized image
+    private func createDownsizedImage(_ image: UIImage?) {
+        
+    }
+}
+
