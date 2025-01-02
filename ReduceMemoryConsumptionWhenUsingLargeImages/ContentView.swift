@@ -9,13 +9,23 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationStack {
+            List {
+                HStack {
+                    ForEach(1...3, id: \.self) { index in
+                        if let image = UIImage(named: "Scr\(index)") {
+                            Image(uiImage: image)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 100, height: 150)
+                                .clipShape(.rect(cornerRadius: 10))
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .navigationTitle("Downsized Images")
         }
-        .padding()
     }
 }
 
