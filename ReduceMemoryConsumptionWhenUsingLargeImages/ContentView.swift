@@ -52,8 +52,10 @@ struct DownsizedImageView<Content: View>: View {
             if let downsizedImage {
                 content(downsizedImage)
             } else {
-                ProgressView()
+                ProgressView("Loading Image...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .foregroundColor(.gray)
+                    .font(.headline)
             }
         }
         .onAppear { handleImageUpdate(image) }
