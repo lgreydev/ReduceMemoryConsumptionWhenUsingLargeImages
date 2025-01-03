@@ -73,7 +73,7 @@ struct DownsizedImageView<Content: View>: View {
         guard let image else { return }
         let targetSize = image.size.aspectFit(size)
         
-        Task.detached(priority: .high) {
+        Task(priority: .high) {
             let renderer = UIGraphicsImageRenderer(size: targetSize)
             let resizedImage = renderer.image { context in
                 image.draw(in: CGRect(origin: .zero, size: targetSize))
