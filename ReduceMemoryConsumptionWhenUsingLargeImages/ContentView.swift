@@ -9,11 +9,12 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
+        let size = CGSize(width: 150, height: 150)
+
         NavigationStack {
             List {
                 HStack {
                     ForEach(1...4, id: \ .self) { index in
-                        let size = CGSize(width: 150, height: 150)
                         DownsizedImageView(image: UIImage(named: "Scr\(index)"), size: size) { image in
                             GeometryReader { geometry in
                                 let containerSize = geometry.size
