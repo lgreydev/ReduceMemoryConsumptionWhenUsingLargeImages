@@ -12,19 +12,18 @@ struct ContentView: View {
         NavigationStack {
             List {
                 HStack {
-                    ForEach(1...4 /*incorrect quantity*/, id: \.self) { index in
+                    ForEach(1...4, id: \ .self) { index in
                         let size = CGSize(width: 150, height: 150)
                         DownsizedImageView(image: UIImage(named: "Scr\(index)"), size: size) { image in
-                            GeometryReader {
-                                let size = $0.size
+                            GeometryReader { geometry in
+                                let containerSize = geometry.size
                                 image
                                     .resizable()
                                     .aspectRatio(contentMode: .fill)
-                                    .frame(width: size.width, height: size.height)
-                                    .clipShape(.rect(cornerRadius: 10))
+                                    .frame(width: containerSize.width, height: containerSize.height)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
                             }
                             .frame(height: 150)
-                            
                         }
                     }
                 }
@@ -39,62 +38,53 @@ struct ContentView: View {
     ContentView()
 }
 
-struct DownsizedImageView<Content: View>: View   {
+struct DownsizedImageView<Content: View>: View {
     var image: UIImage?
     var size: CGSize
     
-    // it works like AsynImage
     @ViewBuilder var content: (Image) -> Content
     
-    // view Properties
-    @State private var downsizedImageView: Image?
+    @State private var downsizedImage: Image?
     
     var body: some View {
         ZStack {
-            if let downsizedImageView {
-                content(downsizedImageView)
+            if let downsizedImage {
+                content(downsizedImage)
             } else {
-                // optional loading View
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .onAppear {
-            guard downsizedImageView == nil else { return }
-            createDownsizedImage(image)
-        }
-        .onChange(of: image) { oldValue, newValue in
-            guard oldValue != newValue else { return }
-            // dynamic image changes
-            createDownsizedImage(newValue)
-            createDownsizedImage(image)
+        .onAppear { handleImageUpdate(image) }
+        .onChange(of: image) { _, newValue in
+            handleImageUpdate(newValue)
         }
     }
     
-    // creating Downsized image
-    private func createDownsizedImage(_ image: UIImage?) {
+    private func handleImageUpdate(_ image: UIImage?) {
+        guard downsizedImage == nil || image != nil else { return }
+        createDownsizedImage(from: image)
+    }
+    
+    private func createDownsizedImage(from image: UIImage?) {
         guard let image else { return }
-        let aspectSize = image.size.aspectFit(size)
+        let targetSize = image.size.aspectFit(size)
         
-        // generate a scaled down version of an image in a separate thread so that it does not affect the main thread while it is being generated.
         Task.detached(priority: .high) {
-            let renderer = UIGraphicsImageRenderer(size: aspectSize)
+            let renderer = UIGraphicsImageRenderer(size: targetSize)
             let resizedImage = renderer.image { context in
-                image.draw(in: CGRect(origin: .zero, size: aspectSize))
+                image.draw(in: CGRect(origin: .zero, size: targetSize))
             }
             await MainActor.run {
-                downsizedImageView = .init(uiImage: resizedImage)
+                downsizedImage = Image(uiImage: resizedImage)
             }
         }
     }
 }
 
 extension CGSize {
-    //return a new size that fits the given size in an aspect ratio
-    func aspectFit(_ to: CGSize) -> CGSize {
-        let scaleX = to.width / self.width
-        let scaleY = to.height / self.height
-        let aspectRatio = min(scaleX, scaleY)
-        return .init(width: aspectRatio * width, height: aspectRatio * height)
+    func aspectFit(_ targetSize: CGSize) -> CGSize {
+        let scale = min(targetSize.width / width, targetSize.height / height)
+        return CGSize(width: width * scale, height: height * scale)
     }
 }
