@@ -65,7 +65,7 @@ struct DownsizedImageView<Content: View>: View {
     }
     
     private func handleImageUpdate(_ image: UIImage?) {
-        guard downsizedImage == nil || image != nil else { return }
+        guard let image else { return }
         createDownsizedImage(from: image)
     }
     
